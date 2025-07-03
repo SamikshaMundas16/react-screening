@@ -44,15 +44,15 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.98 0.02 280); /* Light Background Color */
+  --foreground: oklch(0.15 0 280); /* Dark Text Color */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.5 0.2 270);
+  --primary: oklch(0.55 0.25 280); /* Violet/Purple Color */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --secondary: oklch(0.7 0.15 280); /* Lighter Violet/Purple Color */
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -78,15 +78,15 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: oklch(0.145 0 280); /* Dark violet Background Color */
+  --foreground: oklch(0.95 0 280); /* Light Text for dark mode */
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.6 0.25 280);
+  --primary: oklch(0.6 0.25 280); /* Violet/Purple Color */
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.4 0.1 280); /* Lighter Violet/Purple Color */
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
@@ -118,6 +118,14 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1 h2 h3 {
+    @apply mb-4 font-semibold;
+  }
+
+  p {
+    @apply mb-3 text-base;
   }
 }
 
