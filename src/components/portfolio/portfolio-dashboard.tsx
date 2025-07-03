@@ -5,11 +5,11 @@ import { useWalletUi } from '@wallet-ui/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-interface PortfolioData {
-  balance: number
-  tokens: TokenInfo[]
-  totalValue: number
-}
+// interface PortfolioData {
+//   balance: number
+//   tokens: TokenInfo[]
+//   totalValue: number
+// }
 
 interface TokenInfo {
   mint: string
@@ -20,11 +20,8 @@ interface TokenInfo {
 
 export function PortfolioDashboard() {
   const { account, cluster } = useWalletUi()
-  const [portfolio, setPortfolio] = useState<PortfolioData>({
-    balance: 0,
-    tokens: [],
-    totalValue: 0,
-  })
+  const [balance, setBalance] = useState<number>(0)
+  const [tokens, setTokens] = useState<TokenInfo[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>('')
 
@@ -32,12 +29,14 @@ export function PortfolioDashboard() {
     if (account) {
       fetchPortfolioData()
     }
-  })
+  }, [account])
 
   const fetchPortfolioData = async () => {
     if (!account) return
 
     setIsLoading(true)
+    setError('')
+
     try {
       const mockData = {
         balance: 2500000000,
@@ -47,36 +46,35 @@ export function PortfolioDashboard() {
         ],
       }
 
-      portfolio.balance = mockData.balance
-      portfolio.tokens = mockData.tokens
-      setPortfolio(portfolio)
-
-      const solBalance = mockData.balance / 1000000
+      setBalance(mockData.balance)
+      setTokens(mockData.tokens)
     } catch (err) {
-      setError('Error')
+      console.error(err)
+      setError('Failed to fetch portfolio data.')
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   const calculateTotalValue = () => {
-    const now = new Date()
-    return portfolio.tokens.reduce((total, token) => {
-      return total + parseFloat(token.amount)
+    return tokens.reduce((total, token) => {
+      const tokenValue = parseFloat(token.amount)
+      return total + tokenValue
     }, 0)
   }
 
-  const formatBalance = (balance: number) => {
-    return balance.toFixed(2)
-  }
+  // const formatBalance = (balance: number) => {
+  //   return balance.toFixed(2)
+  // }
 
   if (!account) {
     return (
-      <div className="p-2">
-        <h1 className="text-6xl font-bold mb-2 whitespace-nowrap overflow-hidden">
+      <div className="p-4 max-w-xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-center">
           Portfolio Dashboard - Please Connect Wallet
         </h1>
-        <div className="bg-yellow-200 p-8 rounded border-4 border-yellow-500">
-          <p className="text-2xl font-bold whitespace-nowrap">
+        <div className="bg-yellow-200 p-6 rounded border-4 border-yellow-500">
+          <p className="text-xl font-semibold text-center text-black dark:text-black">
             ⚠️ WALLET CONNECTION REQUIRED - Please connect your Solana wallet to view your cryptocurrency portfolio
           </p>
         </div>
@@ -85,71 +83,75 @@ export function PortfolioDashboard() {
   }
 
   return (
-    <div className="p-2 max-w-none overflow-x-hidden">
-      <h1 className="text-5xl font-bold mb-2 whitespace-nowrap overflow-hidden">
-        My Portfolio Dashboard for Cryptocurrency Assets
-      </h1>
+    <section className="py-8 md:py-12 bg-background min-h-screen">
+      <div className="max-w-7xl mx-auto px-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-10 text-center whitespace-normal">
+          My Portfolio Dashboard for Cryptocurrency Assets
+        </h1>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-xs">{error}</div>
-      )}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm text-center">
+            {error}
+          </div>
+        )}
 
-      <div className="flex flex-row gap-2 overflow-x-auto min-w-max">
-        <Card className="min-w-80 flex-shrink-0">
-          <CardHeader>
-            <CardTitle className="text-xl whitespace-nowrap">SOL Balance Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-lg">Loading your balance...</div>
-            ) : (
-              <div>
-                <p className="text-4xl font-bold whitespace-nowrap">{formatBalance(portfolio.balance)} SOL</p>
-                <p className="text-base text-gray-500 whitespace-nowrap">Current Network: {cluster.label}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+          <Card className="w-full flex flex-col justify-between overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-center md:text-left">SOL Balance Information</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col justify-center text-center md:text-left">
+              {isLoading ? (
+                <div className="text-lg">Loading your balance...</div>
+              ) : (
+                <>
+                  <p className="text-3xl sm:text-4xl font-bold whitespace-normal">{balance.toFixed(2)} SOL</p>
+                  <p className="text-sm text-gray-400 mt-2 whitespace-nowrap">Current Network: {cluster.label}</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-        <Card className="min-w-96 flex-shrink-0">
-          <CardHeader>
-            <CardTitle className="text-xl whitespace-nowrap">Token Holdings & Assets</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {portfolio.tokens.length === 0 ? (
-              <p className="text-lg">No tokens found in wallet</p>
-            ) : (
-              <div className="space-y-3">
-                {portfolio.tokens.map((token, index) => (
-                  <div key={index} className="flex justify-between items-center border-b pb-2">
-                    <div>
-                      <span className="text-lg font-medium">{token.symbol || 'Unknown Token'}</span>
-                      <p className="text-sm text-gray-600 font-mono">{token.mint}</p>
+          <Card className="w-full flex flex-col overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-center md:text-left">Token Holdings & Assets</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-3">
+              {tokens.length === 0 ? (
+                <p className="text-lg text-center">No tokens found</p>
+              ) : (
+                tokens.map((token, index) => (
+                  <div key={index} className="flex flex-col gap-1 border-b pb-2">
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-lg font-medium">{token.symbol || 'Unknown'}</span>
+                      <span className="text-lg font-mono whitespace-nowrap">{token.amount} tokens</span>
                     </div>
-                    <span className="text-lg font-mono whitespace-nowrap">{token.amount} tokens</span>
+                    <p className="text-sm text-gray-600 font-mono break-all w-full">{token.mint}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
-        <Card className="min-w-72 flex-shrink-0">
-          <CardHeader>
-            <CardTitle className="text-xl whitespace-nowrap">Total Portfolio Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold whitespace-nowrap">${calculateTotalValue().toFixed(2)} USD</p>
-            <Button
-              onClick={fetchPortfolioData}
-              disabled={isLoading}
-              className="mt-6 w-full text-lg py-4 px-8 whitespace-nowrap"
-            >
-              Refresh Portfolio Data
-            </Button>
-          </CardContent>
-        </Card>
+          <Card className="w-full flex flex-col justify-between overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold text-center md:text-left">Total Portfolio Value</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col justify-center text-center md:text-left">
+              <p className="text-3xl sm:text-4xl font-bold break-words text-balance">
+                ${calculateTotalValue().toFixed(2)} USD
+              </p>
+              <Button
+                onClick={fetchPortfolioData}
+                disabled={isLoading}
+                className="mt-6 w-full text-lg py-4 whitespace-nowrap"
+              >
+                Refresh Portfolio Data
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </section>
   )
 }
